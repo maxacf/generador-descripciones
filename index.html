@@ -354,7 +354,7 @@
                             📋 Copiar Texto
                         </button>
                         <button class="copy-btn" onclick="copiarHTML()">
-                            🏷️ Copiar HTML
+                        📝 Copiar para Shopify
                         </button>
                     </div>
                 `;
@@ -396,10 +396,28 @@
         }
         
         function copiarHTML() {
-            if (!htmlActual) {
-                showToast('No hay HTML para copiar', 'error');
-                return;
-            }
+    if (!htmlActual) {
+        showToast('No hay texto para copiar', 'error');
+        return;
+    }
+    
+    // CAMBIO: Ahora copia el texto formateado, no HTML
+    const textoFormateado = data.texto_shopify_formateado || htmlActual;
+    
+    navigator.clipboard.writeText(textoFormateado).then(() => {
+        showToast('✅ Texto formateado copiado - Pégalo directo en Shopify');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = textoFormateado;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('✅ Texto formateado copiado');
+    });
+}
             
             navigator.clipboard.writeText(htmlActual).then(() => {
                 showToast('✅ HTML copiado');
