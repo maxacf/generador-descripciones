@@ -38,21 +38,9 @@
         }
         
         .logo-container img {
-            max-width: 180px;
+            max-width: 200px;
             height: auto;
             margin-bottom: 10px;
-        }
-        
-        /* Si no tienes imagen, usa texto */
-        .logo-text {
-            font-size: 32px;
-            font-weight: bold;
-            color: #182f28;
-            margin-bottom: 5px;
-        }
-        
-        .logo-text span {
-            color: #e55381;
         }
         
         .subtitle {
@@ -152,6 +140,8 @@
             color: #182f28;
             max-height: 400px;
             overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Georgia', serif;
         }
         
         .descripcion-box::-webkit-scrollbar {
@@ -245,13 +235,9 @@
 </head>
 <body>
     <div class="container">
-        <!-- Logo -->
+        <!-- Logo con imagen de Imgur -->
         <div class="logo-container">
-            <!-- Opción 1: Si tienes URL del logo, descomenta y agrega la URL -->
-            <-- <img src="https://imgur.com/a/McuOuuS" alt="Liz Parfums"> -->
-            
-            <!-- Opción 2: Logo con texto -->
-            <div class="logo-text">Liz <span>Parfums</span></div>
+            <img src="https://i.imgur.com/69ltxlI.png" alt="Liz Parfums">
         </div>
         
         <p class="subtitle">Generador de Descripciones Premium</p>
@@ -283,7 +269,8 @@
     <script>
         // Variables globales para almacenar los datos
         let descripcionActual = '';
-        let htmlActual = '';
+        let textoShopify = '';
+        let datosCompletos = null;
         
         async function generarDescripcion() {
             const marca = document.getElementById('marca').value.trim();
@@ -324,37 +311,34 @@
                 }
                 
                 const data = await response.json();
+                datosCompletos = data; // Guardar todos los datos
                 
-                // Verificar que tenemos datos
-                if (!data.descripcion) {
-                    console.log('Datos recibidos:', data); // Para ver qué llega
-                if (!data.descripcion && !data.html_shopify && !data.html_shopify_formateado) {
+                console.log('Datos recibidos:', data); // Para debugging
+                
+                // Verificar que tenemos datos - múltiples posibilidades
+                descripcionActual = data.descripcion || data.descripcion_procesada || data.text || data.output || '';
+                textoShopify = data.texto_shopify_formateado || data.html_shopify_formateado || descripcionActual;
+                
+                // Si los datos vienen anidados
+                if (!descripcionActual && data.json) {
+                    descripcionActual = data.json.descripcion || data.json.descripcion_procesada || '';
+                    textoShopify = data.json.texto_shopify_formateado || data.json.html_shopify_formateado || '';
+                }
+                
+                if (!descripcionActual) {
                     throw new Error('No se recibió descripción del servidor');
                 }
                 
-                // Si los datos vienen directamente
-                descripcionActual = data.descripcion || data.text || '';
-                // Si vienen anidados
-                if (!descripcionActual && data.json) {
-                    descripcionActual = data.json.descripcion || '';
-                    htmlActual = data.json.html_shopify_formateado || '';
-                } else {
-                    htmlActual = data.html_shopify_formateado || data.html_shopify || '';
-                    }
-}
-                
-                // Mostrar resultado
+                // Mostrar resultado - Sin convertir saltos de línea a <br> para mantener formato
                 resultado.innerHTML = `
                     <h3>📝 Descripción Generada</h3>
-                    <div class="descripcion-box">
-                        ${descripcionActual.replace(/\n/g, '<br>')}
-                    </div>
+                    <div class="descripcion-box">${descripcionActual}</div>
                     <div class="button-container">
                         <button class="copy-btn" onclick="copiarDescripcion()">
-                            📋 Copiar Texto
+                            📋 Copiar Descripción
                         </button>
-                        <button class="copy-btn" onclick="copiarHTML()">
-                        📝 Copiar para Shopify
+                        <button class="copy-btn" onclick="copiarParaShopify()">
+                            📝 Copiar para Shopify
                         </button>
                     </div>
                 `;
@@ -381,7 +365,7 @@
             }
             
             navigator.clipboard.writeText(descripcionActual).then(() => {
-                showToast('✅ Texto copiado');
+                showToast('✅ Descripción copiada');
             }).catch(err => {
                 console.error('Error al copiar:', err);
                 // Fallback para navegadores antiguos
@@ -391,46 +375,31 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showToast('✅ Texto copiado');
+                showToast('✅ Descripción copiada');
             });
         }
         
-        function copiarHTML() {
-    if (!htmlActual) {
-        showToast('No hay texto para copiar', 'error');
-        return;
-    }
-    
-    // CAMBIO: Ahora copia el texto formateado, no HTML
-    const textoFormateado = data.texto_shopify_formateado || htmlActual;
-    
-    navigator.clipboard.writeText(textoFormateado).then(() => {
-        showToast('✅ Texto formateado copiado - Pégalo directo en Shopify');
-    }).catch(err => {
-        console.error('Error al copiar:', err);
-        // Fallback
-        const textarea = document.createElement('textarea');
-        textarea.value = textoFormateado;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast('✅ Texto formateado copiado');
-    });
-}
+        function copiarParaShopify() {
+            if (!textoShopify && !descripcionActual) {
+                showToast('No hay texto para copiar', 'error');
+                return;
+            }
             
-            navigator.clipboard.writeText(htmlActual).then(() => {
-                showToast('✅ HTML copiado');
+            // Usar el texto formateado para Shopify si existe, sino usar la descripción normal
+            const textoACopiar = textoShopify || descripcionActual;
+            
+            navigator.clipboard.writeText(textoACopiar).then(() => {
+                showToast('✅ Texto para Shopify copiado - Pégalo directo en el editor');
             }).catch(err => {
                 console.error('Error al copiar:', err);
                 // Fallback
                 const textarea = document.createElement('textarea');
-                textarea.value = htmlActual;
+                textarea.value = textoACopiar;
                 document.body.appendChild(textarea);
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showToast('✅ HTML copiado');
+                showToast('✅ Texto para Shopify copiado');
             });
         }
         
