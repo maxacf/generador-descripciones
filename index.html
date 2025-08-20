@@ -332,9 +332,16 @@
                     throw new Error('No se recibió descripción del servidor');
                 }
                 
-                // Guardar los datos
-                descripcionActual = data.descripcion || '';
-                htmlActual = data.html_shopify_formateado || data.html || data.descripcion;
+                // Si los datos vienen directamente
+                descripcionActual = data.descripcion || data.text || '';
+                // Si vienen anidados
+                if (!descripcionActual && data.json) {
+                    descripcionActual = data.json.descripcion || '';
+                    htmlActual = data.json.html_shopify_formateado || '';
+                } else {
+                    htmlActual = data.html_shopify_formateado || data.html_shopify || '';
+                    }
+}
                 
                 // Mostrar resultado
                 resultado.innerHTML = `
