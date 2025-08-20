@@ -327,6 +327,8 @@
                 
                 // Verificar que tenemos datos
                 if (!data.descripcion) {
+                    console.log('Datos recibidos:', data); // Para ver qué llega
+                if (!data.descripcion && !data.html_shopify && !data.html_shopify_formateado) {
                     throw new Error('No se recibió descripción del servidor');
                 }
                 
