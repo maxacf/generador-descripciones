@@ -5,95 +5,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Georgia', serif;
-            max-width: 500px;
-            margin: 100px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            background: #f5f5f5;
         }
+        
         .container {
             background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
         }
+        
         h1 {
             color: #2c2c2c;
-            font-size: 24px;
-            margin-bottom: 30px;
+            font-size: 28px;
+            margin-bottom: 10px;
             text-align: center;
         }
-        input, button {
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input {
             width: 100%;
             padding: 15px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 16px;
+            transition: all 0.3s;
+            font-family: 'Georgia', serif;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
         button {
-            background: #2c2c2c;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
         }
-        button:hover {
-            background: #444;
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
+        
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
         }
+        
         #resultado {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 40px;
+            padding: 25px;
             background: #f9f9f9;
+            border-radius: 15px;
+            display: none;
+            border: 1px solid #e0e0e0;
+        }
+        
+        #resultado h3 {
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .descripcion-box {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-left: 4px solid #667eea;
             border-radius: 5px;
             line-height: 1.8;
-            display: none;
+            color: #333;
+            max-height: 400px;
+            overflow-y: auto;
         }
+        
+        .copy-btn {
+            background: #4CAF50;
+            padding: 12px 20px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .copy-btn:hover {
+            background: #45a049;
+        }
+        
         .loading {
             text-align: center;
             color: #666;
+            padding: 20px;
         }
-        .copy-btn {
-            background: #4CAF50;
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-msg {
+            color: #d32f2f;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 5px;
             margin-top: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌸 Generador de Descripciones</h1>
+        <h1>🌸 Liz Parfums</h1>
+        <p class="subtitle">Generador de Descripciones Poéticas</p>
         
-        <input type="text" id="marca" placeholder="Marca (ej: Tom Ford)" required>
-        <input type="text" id="nombre" placeholder="Nombre del Perfume (ej: Black Orchid)" required>
+        <div class="input-group">
+            <label for="marca">Marca del Perfume</label>
+            <input type="text" id="marca" placeholder="Ej: Tom Ford, Chanel, Dior..." required>
+        </div>
+        
+        <div class="input-group">
+            <label for="nombre">Nombre del Perfume</label>
+            <input type="text" id="nombre" placeholder="Ej: Black Orchid, N°5, Sauvage..." required>
+        </div>
         
         <button id="generar" onclick="generarDescripcion()">
             Generar Descripción
         </button>
         
         <div id="resultado"></div>
+        
+        <div class="footer">
+            Powered by AI • Liz Parfums Chile
+        </div>
     </div>
+    
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
 
     <script>
+        // Variables globales para almacenar los datos
+        let descripcionActual = '';
+        let htmlActual = '';
+        
         async function generarDescripcion() {
-            const marca = document.getElementById('marca').value;
-            const nombre = document.getElementById('nombre').value;
+            const marca = document.getElementById('marca').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
             const btn = document.getElementById('generar');
             const resultado = document.getElementById('resultado');
             
+            // Validación
             if (!marca || !nombre) {
-                alert('Por favor completa ambos campos');
+                showToast('Por favor completa ambos campos', 'error');
                 return;
             }
             
             // UI feedback
             btn.disabled = true;
-            btn.textContent = 'Generando... (30-40 segundos)';
+            btn.textContent = 'Generando...';
             resultado.style.display = 'block';
-            resultado.innerHTML = '<div class="loading">✨ Buscando información del perfume...</div>';
+            resultado.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>✨ Buscando información del perfume...</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Esto puede tomar 30-40 segundos</p>
+                </div>
+            `;
             
             try {
                 // Llamada al webhook de n8n
@@ -105,54 +266,112 @@
                     body: JSON.stringify({ marca, nombre })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                // Verificar que tenemos datos
+                if (!data.descripcion) {
+                    throw new Error('No se recibió descripción del servidor');
+                }
+                
+                // Guardar los datos
+                descripcionActual = data.descripcion || '';
+                htmlActual = data.html_shopify_formateado || data.html || data.descripcion;
                 
                 // Mostrar resultado
                 resultado.innerHTML = `
-                    <h3>📝 Descripción Generada:</h3>
-                    <div id="descBox" style="margin: 20px 0; padding: 15px; background: white; border-left: 3px solid #2c2c2c;"></div>
-                    <button class="copy-btn" id="copyDesc">
-                        📋 Copiar Descripción
-                    </button>
-                    <button class="copy-btn" id="copyHtml">
-                        🏷️ Copiar HTML para Shopify
-                    </button>
-                `;
-                // Insertar texto de forma segura
-                document.getElementById('descBox').textContent = data.descripcion || '';
-                // Asignar eventos a los botones para evitar problemas de comillas
-                document.getElementById('copyDesc').onclick = () => copiarTexto(data.descripcion || '');
-                document.getElementById('copyHtml').onclick = () => copiarTexto(data.html || '');
-                
-            } catch (error) {
-                resultado.innerHTML = `
-                    <div style="color: red;">
-                        ❌ Error: ${error.message}<br>
-                        Intenta nuevamente o contacta soporte.
+                    <h3>📝 Descripción Generada</h3>
+                    <div class="descripcion-box">
+                        ${descripcionActual.replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;">
+                        <button class="copy-btn" onclick="copiarDescripcion()">
+                            📋 Copiar Texto Plano
+                        </button>
+                        <button class="copy-btn" onclick="copiarHTML()">
+                            🏷️ Copiar HTML para Shopify
+                        </button>
                     </div>
                 `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultado.innerHTML = `
+                    <div class="error-msg">
+                        ❌ Error: ${error.message}<br>
+                        <small>Por favor, intenta nuevamente o contacta soporte.</small>
+                    </div>
+                `;
+                showToast('Error al generar descripción', 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Generar Descripción';
             }
         }
         
-        function copiarTexto(texto) {
-            // Limpiar el texto del HTML escapado
-            const textoLimpio = (texto || '').replace(/\"/g, '"').replace(/\n/g, '\n');
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textoLimpio).then(() => alert('✅ Copiado al portapapeles!'));
-            } else {
-                // Fallback para contextos no seguros
-                const ta = document.createElement('textarea');
-                ta.value = textoLimpio;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                alert('✅ Copiado al portapapeles!');
+        function copiarDescripcion() {
+            if (!descripcionActual) {
+                showToast('No hay descripción para copiar', 'error');
+                return;
             }
+            
+            navigator.clipboard.writeText(descripcionActual).then(() => {
+                showToast('✅ Texto copiado');
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                // Fallback para navegadores antiguos
+                const textarea = document.createElement('textarea');
+                textarea.value = descripcionActual;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('✅ Texto copiado');
+            });
         }
+        
+        function copiarHTML() {
+            if (!htmlActual) {
+                showToast('No hay HTML para copiar', 'error');
+                return;
+            }
+            
+            navigator.clipboard.writeText(htmlActual).then(() => {
+                showToast('✅ HTML copiado');
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = htmlActual;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('✅ HTML copiado');
+            });
+        }
+        
+        // Función para mostrar notificaciones toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = type === 'error' ? '#d32f2f' : '#333';
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Permitir enviar con Enter
+        document.getElementById('nombre').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generarDescripcion();
+            }
+        });
     </script>
 </body>
 </html>
